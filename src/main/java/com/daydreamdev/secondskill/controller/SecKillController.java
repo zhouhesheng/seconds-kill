@@ -3,7 +3,6 @@ package com.daydreamdev.secondskill.controller;
 import com.daydreamdev.secondskill.common.utils.ScriptUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -12,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.JedisShardInfo;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
@@ -52,8 +52,16 @@ public class SecKillController {
 
   @Bean
   JedisConnectionFactory jedisConnectionFactory() {
-    RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration(redisIP, redisPort);
-    return new JedisConnectionFactory(redisStandaloneConfiguration);
+    JedisPoolConfig config = new JedisPoolConfig();
+    config.setMaxTotal(maxTotal);
+    config.setMaxIdle(maxIdle);
+    config.setTestOnBorrow(testOnBorrow);
+    config.setBlockWhenExhausted(true);
+    config.setMaxWaitMillis(maxWait);
+    final JedisConnectionFactory factory = new JedisConnectionFactory(config);
+    JedisShardInfo shardInfo = new JedisShardInfo(redisIP, redisPort);
+    factory.setShardInfo(shardInfo);
+    return factory;
   }
 
 

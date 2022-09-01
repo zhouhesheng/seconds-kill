@@ -6,12 +6,12 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.script.RedisScript;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.JedisShardInfo;
 
 import java.util.*;
 
@@ -33,10 +33,19 @@ public class RedisTemplateTest {
   private RedisTemplate<String, Object> redisTemplate;
   private DefaultRedisScript<Object> script;
 
+
   @Bean
   JedisConnectionFactory jedisConnectionFactory() {
-    RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration(redisIP, redisPort);
-    return new JedisConnectionFactory(redisStandaloneConfiguration);
+    JedisPoolConfig config = new JedisPoolConfig();
+    config.setMaxTotal(maxTotal);
+    config.setMaxIdle(maxIdle);
+    config.setTestOnBorrow(testOnBorrow);
+    config.setBlockWhenExhausted(true);
+    config.setMaxWaitMillis(maxWait);
+    final JedisConnectionFactory factory = new JedisConnectionFactory(config);
+    JedisShardInfo shardInfo = new JedisShardInfo(redisIP, redisPort);
+    factory.setShardInfo(shardInfo);
+    return factory;
   }
 
   @Bean
@@ -92,10 +101,11 @@ public class RedisTemplateTest {
 
   @Test
   public void redisTestLua0() {
-    RedisScript redisScript = RedisScript.of("local times = redis.call('incr',KEYS[1]) if times == 1 then redis.call('expire',KEYS[1],ARGV[1]) end if times > 5 then return 0 end return 1",Long.class);
+    final DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>();
+    redisScript.setScriptText("local times = redis.call('incr',KEYS[1]) if times == 1 then redis.call('expire',KEYS[1],ARGV[1]) end if times > 5 then return 0 end return 1");
     List<String> list = new ArrayList<>();
     list.add("door3");
-    Object result = redisTemplate.execute(redisScript,list,"60");
+    Long result = redisTemplate.execute(redisScript, list, "60");
     logger.info("result={}", result);
   }
 }

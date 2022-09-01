@@ -31,7 +31,7 @@ public class RedisTemplateTest {
   private static Integer redisPort = 6379;
 
   private RedisTemplate<String, Object> redisTemplate;
-  private DefaultRedisScript<Object> script;
+  private DefaultRedisScript<String> script;
 
 
   @Bean
@@ -84,7 +84,7 @@ public class RedisTemplateTest {
   public void redisTestSet() {
     String key = "seckill:goodsStock:hello";
     Map<String, Integer> goods = new HashMap<>();
-    goods.put("totalCount", 300);
+    goods.put("totalCount", 100);
     goods.put("initStatus", 1);
     goods.put("seckillCount", 0);
     redisTemplate.opsForHash().putAll(key, goods);
@@ -95,7 +95,8 @@ public class RedisTemplateTest {
     String key = "seckill:goodsStock:hello";
     this.script = new DefaultRedisScript<>();
     this.script.setScriptText("return 'hello'");
-    Object seckillCount = redisTemplate.execute(this.script, Collections.singletonList(key), "1");
+    this.script.setResultType(String.class);
+    String seckillCount = redisTemplate.execute(this.script, Collections.singletonList(key), "1");
     logger.info("seckillCount={}", seckillCount);
   }
 
@@ -103,6 +104,7 @@ public class RedisTemplateTest {
   public void redisTestLua0() {
     final DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>();
     redisScript.setScriptText("local times = redis.call('incr',KEYS[1]) if times == 1 then redis.call('expire',KEYS[1],ARGV[1]) end if times > 5 then return 0 end return 1");
+    redisScript.setResultType(Long.class);
     List<String> list = new ArrayList<>();
     list.add("door3");
     Long result = redisTemplate.execute(redisScript, list, "60");

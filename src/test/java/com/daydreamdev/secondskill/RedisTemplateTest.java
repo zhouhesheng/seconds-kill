@@ -93,10 +93,10 @@ public class RedisTemplateTest {
   @Test
   public void redisTestLua() {
     String key = "seckill:goodsStock:hello";
-    this.script = new DefaultRedisScript<>();
-    this.script.setScriptText("return 'hello'");
-    this.script.setResultType(String.class);
-    String seckillCount = redisTemplate.execute(this.script, Collections.singletonList(key), "1");
+    final DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>();
+    redisScript.setScriptText("return tonumber(ARGV[1])");
+    redisScript.setResultType(Long.class);
+    Long seckillCount = redisTemplate.execute(redisScript, Collections.singletonList(key), "1");
     logger.info("seckillCount={}", seckillCount);
   }
 

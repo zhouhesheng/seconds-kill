@@ -103,7 +103,7 @@ public class RedisTemplateTest {
   @Test
   public void redisTestLua0() {
     final DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>();
-    redisScript.setScriptText("local times = redis.call('incr',KEYS[1]) if times == 1 then redis.call('expire',KEYS[1],ARGV[1]) end if times > 5 then return 0 end return 1");
+    redisScript.setScriptText("local times = redis.call('incr',KEYS[1]) if times == 1 then redis.call('expire',KEYS[1],ARGV[1]) end if times > 5 then return times end return -1");
     redisScript.setResultType(Long.class);
     List<String> list = new ArrayList<>();
     list.add("door3");

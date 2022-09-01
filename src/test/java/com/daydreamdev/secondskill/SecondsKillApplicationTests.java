@@ -1,5 +1,6 @@
 package com.daydreamdev.secondskill;
 
+import com.daydreamdev.secondskill.common.utils.ScriptUtil;
 import com.daydreamdev.secondskill.dao.StockMapper;
 import com.daydreamdev.secondskill.dao.StockOrderMapper;
 import com.daydreamdev.secondskill.pojo.Stock;
@@ -21,67 +22,73 @@ import java.util.concurrent.Executors;
 @SpringBootTest
 public class SecondsKillApplicationTests {
 
-	private Logger logger = LoggerFactory.getLogger(SecondsKillApplicationTests.class);
+  private Logger logger = LoggerFactory.getLogger(SecondsKillApplicationTests.class);
 
-	@Autowired
-	private StockMapper stockMapper;
+  @Autowired
+  private StockMapper stockMapper;
 
-	@Autowired
-	private StockOrderMapper orderMapper;
+  @Autowired
+  private StockOrderMapper orderMapper;
 
-	@Test
-	public void StockMapperSelectByPrimaryKeyTest() {
-		Stock stock = stockMapper.selectByPrimaryKey(1);
-		logger.info("stock: id = {}, name = {}, count = {}, sale = {}, version = {}",
-				stock.getId(), stock.getName(), stock.getCount(), stock.getSale(), stock.getVersion());
-	}
+  @Test
+  public void seckillCacheBuilderTest() {
+    String script = ScriptUtil.getScript("secKill.lua");
+    logger.info("script={}", script);
+  }
 
-	@Test
-	public void StockMapperUpdateByPrimaryKeySelective() {
-		Stock stock = new Stock();
-		stock.setId(1);
-		stock.setName("苹果手机");
-		stock.setCount(11);
-		stock.setSale(5);
-		stock.setVersion(0);
-		int res = stockMapper.updateByPrimaryKeySelective(stock);
-		Assert.assertEquals(res, 1);
-	}
+  @Test
+  public void StockMapperSelectByPrimaryKeyTest() {
+    Stock stock = stockMapper.selectByPrimaryKey(1);
+    logger.info("stock: id = {}, name = {}, count = {}, sale = {}, version = {}",
+      stock.getId(), stock.getName(), stock.getCount(), stock.getSale(), stock.getVersion());
+  }
 
-	@Test
-	public void StockMapperUpdateByOptimistic() {
+  @Test
+  public void StockMapperUpdateByPrimaryKeySelective() {
+    Stock stock = new Stock();
+    stock.setId(1);
+    stock.setName("苹果手机");
+    stock.setCount(11);
+    stock.setSale(5);
+    stock.setVersion(0);
+    int res = stockMapper.updateByPrimaryKeySelective(stock);
+    Assert.assertEquals(res, 1);
+  }
 
-		class ThreadOrder implements Runnable {
-			@Override
-			public void run() {
-				Stock stock = new Stock();
-				stock.setId(1);
-				stock.setName("测试手机");
-				stock.setCount(10);
-				stock.setSale(5);
-				stock.setVersion(0);
-				int res = stockMapper.updateByOptimistic(stock);
-				System.out.println(res);
-				logger.info("res: " + res);
-			}
-		}
+  @Test
+  public void StockMapperUpdateByOptimistic() {
 
-		// 线程池
-		ExecutorService service = Executors.newFixedThreadPool(10);
-		for (int i = 0; i < 15; i++) {
-			service.submit(new ThreadOrder());
-		}
-	}
+    class ThreadOrder implements Runnable {
+      @Override
+      public void run() {
+        Stock stock = new Stock();
+        stock.setId(1);
+        stock.setName("测试手机");
+        stock.setCount(10);
+        stock.setSale(5);
+        stock.setVersion(0);
+        int res = stockMapper.updateByOptimistic(stock);
+        System.out.println(res);
+        logger.info("res: " + res);
+      }
+    }
 
-	@Test
-	public void StockOrderMapperInsertSelective() {
-		StockOrder order = new StockOrder();
-		order.setId(2);
-		order.setSid(1);
-		order.setName("苹果手机");
-		order.setCreateTime(new Date());
-		int res = orderMapper.insertSelective(order);
-		Assert.assertEquals(res, 1);
-	}
+    // 线程池
+    ExecutorService service = Executors.newFixedThreadPool(10);
+    for (int i = 0; i < 15; i++) {
+      service.submit(new ThreadOrder());
+    }
+  }
+
+  @Test
+  public void StockOrderMapperInsertSelective() {
+    StockOrder order = new StockOrder();
+    order.setId(2);
+    order.setSid(1);
+    order.setName("苹果手机");
+    order.setCreateTime(new Date());
+    int res = orderMapper.insertSelective(order);
+    Assert.assertEquals(res, 1);
+  }
 
 }

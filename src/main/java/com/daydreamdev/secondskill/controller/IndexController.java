@@ -1,7 +1,7 @@
 package com.daydreamdev.secondskill.controller;
 
 import com.daydreamdev.secondskill.common.limit.RedisLimit;
-import com.daydreamdev.secondskill.common.stockWithRedis.StockWithRedis;
+import com.daydreamdev.secondskill.common.StockWithRedis.StockWithRedis;
 import com.daydreamdev.secondskill.service.api.OrderService;
 import com.daydreamdev.secondskill.service.api.StockService;
 import lombok.extern.slf4j.Slf4j;

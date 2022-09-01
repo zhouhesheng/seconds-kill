@@ -1,4 +1,4 @@
-package com.daydreamdev.secondskill.common.stockWithRedis;
+package com.daydreamdev.secondskill.common.StockWithRedis;
 
 import com.daydreamdev.secondskill.common.utils.RedisPool;
 import com.daydreamdev.secondskill.common.utils.RedisPoolUtil;

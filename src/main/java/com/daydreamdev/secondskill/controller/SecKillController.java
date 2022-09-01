@@ -2,6 +2,7 @@ package com.daydreamdev.secondskill.controller;
 
 import com.daydreamdev.secondskill.common.utils.ScriptUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -42,7 +43,10 @@ public class SecKillController {
   private static final String success = "SUCCESS";
   private static final String error = "ERROR";
   private static final String GOODS_CACHE = "seckill:goodsStock:";
-  private final RedisTemplate<String, Object> redisTemplate;
+
+  @Autowired
+  private RedisTemplate<String, Object> redisTemplate;
+
   private final DefaultRedisScript<Object> script;
 
 
@@ -50,33 +54,8 @@ public class SecKillController {
     return GOODS_CACHE.concat(id);
   }
 
-  @Bean
-  JedisConnectionFactory jedisConnectionFactory() {
-    JedisPoolConfig config = new JedisPoolConfig();
-    config.setMaxTotal(maxTotal);
-    config.setMaxIdle(maxIdle);
-    config.setTestOnBorrow(testOnBorrow);
-    config.setBlockWhenExhausted(true);
-    config.setMaxWaitMillis(maxWait);
-    final JedisConnectionFactory factory = new JedisConnectionFactory(config);
-    JedisShardInfo shardInfo = new JedisShardInfo(redisIP, redisPort);
-    factory.setShardInfo(shardInfo);
-    return factory;
-  }
-
-
-  @Bean
-  public RedisTemplate<String, Object> redisTemplate() {
-    RedisTemplate<String, Object> template = new RedisTemplate<>();
-    template.setConnectionFactory(jedisConnectionFactory());
-    template.setEnableTransactionSupport(true);
-    template.afterPropertiesSet();
-
-    return template;
-  }
 
   public SecKillController() {
-    this.redisTemplate = redisTemplate();
 
     final String lua = ScriptUtil.getScript("secKill.lua");
     this.script = new DefaultRedisScript<>();
@@ -96,7 +75,9 @@ public class SecKillController {
     goods.put("initStatus", 1);
     goods.put("seckillCount", 0);
     redisTemplate.opsForHash().putAll(key, goods);
-    return success;
+
+    final Object result = redisTemplate.opsForHash().get(key, "totalCount");
+    return success + ":" + result;
   }
 
   @RequestMapping(value = "secKill", method = RequestMethod.POST)

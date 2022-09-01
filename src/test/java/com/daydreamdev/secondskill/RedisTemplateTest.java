@@ -10,6 +10,7 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.script.RedisScript;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisShardInfo;
 
@@ -53,6 +54,7 @@ public class RedisTemplateTest {
     RedisTemplate<String, Object> template = new RedisTemplate<>();
     template.setConnectionFactory(jedisConnectionFactory());
     template.setEnableTransactionSupport(true);
+    template.setKeySerializer(new StringRedisSerializer());
     template.afterPropertiesSet();
 
     return template;
@@ -70,7 +72,7 @@ public class RedisTemplateTest {
 
   @Test
   public void redisTestGet() {
-    String key = "seckill:goodsStock:hello";
+    String key = "seckill:goodsStock:hi";
     if (redisTemplate.hasKey(key)) {
       final Object result = redisTemplate.opsForHash().get(key, "totalCount");
       logger.info("exists={}", result);
@@ -82,7 +84,7 @@ public class RedisTemplateTest {
 
   @Test
   public void redisTestSet() {
-    String key = "seckill:goodsStock:hello";
+    String key = "seckill:goodsStock:hi";
     Map<String, Integer> goods = new HashMap<>();
     goods.put("totalCount", 100);
     goods.put("initStatus", 1);

@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
-import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import redis.clients.jedis.JedisPoolConfig;
@@ -89,7 +88,6 @@ public class RedisTemplateTest {
     String key = "seckill:goodsStock:hi";
     Map<String, Integer> goods = new HashMap<>();
     goods.put("totalCount", 100);
-    goods.put("initStatus", 1);
     goods.put("seckillCount", 0);
     redisTemplate.opsForHash().putAll(key, goods);
   }

@@ -64,7 +64,6 @@ public class SecKillController {
     String key = getCacheKey(id);
     Map<String, Integer> goods = new HashMap<>();
     goods.put("totalCount", totalCount);
-    goods.put("initStatus", 1);
     goods.put("seckillCount", 0);
     redisTemplate.opsForHash().putAll(key, goods);
 

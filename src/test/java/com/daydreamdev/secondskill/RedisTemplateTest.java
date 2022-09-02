@@ -9,9 +9,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.script.RedisScript;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.util.*;
@@ -41,7 +40,7 @@ public class RedisTemplateTest {
     template.setEnableTransactionSupport(true);
     template.setDefaultSerializer(new StringRedisSerializer());
     template.setKeySerializer(new StringRedisSerializer());
-    template.setHashValueSerializer(new Jackson2JsonRedisSerializer<>(Object.class));
+    template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
     template.afterPropertiesSet();
     return template;
   }
@@ -70,7 +69,7 @@ public class RedisTemplateTest {
   public void redisTestSet() {
     String key = "seckill:goodsStock:hello";
     Map<String, Integer> goods = new HashMap<>();
-    goods.put("totalCount", 100);
+    goods.put("totalCount", 200);
     goods.put("seckillCount", 0);
     redisTemplate.opsForHash().putAll(key, goods);
   }

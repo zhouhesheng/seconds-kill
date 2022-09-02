@@ -4,7 +4,7 @@ import com.daydreamdev.secondskill.common.utils.ScriptUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -35,7 +35,7 @@ public class SecKillController {
   @Autowired
   private RedisTemplate<String, Object> redisTemplate;
 
-  private final DefaultRedisScript<Long> script;
+  private final RedisScript<Long> script;
 
 
   private String getCacheKey(String id) {
@@ -44,11 +44,8 @@ public class SecKillController {
 
 
   public SecKillController() {
-
     final String lua = ScriptUtil.getScript("secKill.lua");
-    this.script = new DefaultRedisScript<>();
-    this.script.setScriptText(lua);
-    this.script.setResultType(Long.class);
+    this.script = RedisScript.of(lua, Long.class);
   }
 
 

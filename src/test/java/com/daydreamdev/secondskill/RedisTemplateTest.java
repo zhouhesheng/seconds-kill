@@ -10,6 +10,7 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.script.RedisScript;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisShardInfo;
@@ -54,16 +55,16 @@ public class RedisTemplateTest {
     RedisTemplate<String, Object> template = new RedisTemplate<>();
     template.setConnectionFactory(jedisConnectionFactory());
     template.setEnableTransactionSupport(true);
+    template.setDefaultSerializer(new StringRedisSerializer());
     template.setKeySerializer(new StringRedisSerializer());
+    template.setHashValueSerializer(new Jackson2JsonRedisSerializer<>(Object.class));
     template.afterPropertiesSet();
-
     return template;
   }
 
   @Before
   public void beforeFunction() {
     this.redisTemplate = redisTemplate();
-
     final String lua = ScriptUtil.getScript("secKill.lua");
     this.script = new DefaultRedisScript<>();
     this.script.setScriptText(lua);
@@ -94,12 +95,12 @@ public class RedisTemplateTest {
 
   @Test
   public void redisTestLua() {
-    String key = "seckill:goodsStock:hello";
+    String key = "hello-lua";
     final DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>();
-    redisScript.setScriptText("return tonumber(ARGV[1])");
+    redisScript.setScriptText("return 2*tonumber(ARGV[1])");
     redisScript.setResultType(Long.class);
-    Long seckillCount = redisTemplate.execute(redisScript, Collections.singletonList(key), "1");
-    logger.info("seckillCount={}", seckillCount);
+    Long value = redisTemplate.execute(redisScript, Collections.singletonList(key), "11");
+    logger.info("value={}", value);
   }
 
   @Test

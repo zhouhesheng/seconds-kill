@@ -34,7 +34,7 @@
           <stringProp name="HTTPSampler.port">9198</stringProp>
           <stringProp name="HTTPSampler.protocol">http</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">/secKill/secKill?id=hi&amp;number=2</stringProp>
+          <stringProp name="HTTPSampler.path">/secKill/secKill?id=hello&amp;number=2</stringProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>

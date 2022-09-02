@@ -6,13 +6,13 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.JedisShardInfo;
 
 import java.util.*;
 
@@ -24,29 +24,14 @@ import java.util.*;
 public class RedisTemplateTest {
   private Logger logger = LoggerFactory.getLogger(RedisTemplateTest.class);
 
-  private static Integer maxTotal = 300;
-  private static Integer maxIdle = 100;
-  private static Integer maxWait = 10000;
-  private static Boolean testOnBorrow = true;
-  private static String redisIP = "127.0.0.1";
-  private static Integer redisPort = 6379;
-
   private RedisTemplate<String, Object> redisTemplate;
-  private DefaultRedisScript<Long> script;
+  private RedisScript<Long> script;
 
 
   @Bean
   JedisConnectionFactory jedisConnectionFactory() {
-    JedisPoolConfig config = new JedisPoolConfig();
-    config.setMaxTotal(maxTotal);
-    config.setMaxIdle(maxIdle);
-    config.setTestOnBorrow(testOnBorrow);
-    config.setBlockWhenExhausted(true);
-    config.setMaxWaitMillis(maxWait);
-    final JedisConnectionFactory factory = new JedisConnectionFactory(config);
-    JedisShardInfo shardInfo = new JedisShardInfo(redisIP, redisPort);
-    factory.setShardInfo(shardInfo);
-    return factory;
+    RedisStandaloneConfiguration config = new RedisStandaloneConfiguration("localhost", 6379);
+    return new JedisConnectionFactory(config);
   }
 
   @Bean
@@ -65,16 +50,14 @@ public class RedisTemplateTest {
   public void beforeFunction() {
     this.redisTemplate = redisTemplate();
     final String lua = ScriptUtil.getScript("secKill.lua");
-    this.script = new DefaultRedisScript<>();
-    this.script.setScriptText(lua);
-    this.script.setResultType(Long.class);
+    this.script = RedisScript.of(lua, Long.class);
     logger.info("Before Function");
   }
 
   @Test
   public void redisTestGet() {
-    String key = "seckill:goodsStock:hi";
-    if (redisTemplate.hasKey(key)) {
+    String key = "seckill:goodsStock:hello";
+    if (Boolean.TRUE.equals(redisTemplate.hasKey(key))) {
       final Object result = redisTemplate.opsForHash().get(key, "totalCount");
       logger.info("exists={}", result);
     } else {
@@ -85,7 +68,7 @@ public class RedisTemplateTest {
 
   @Test
   public void redisTestSet() {
-    String key = "seckill:goodsStock:hi";
+    String key = "seckill:goodsStock:hello";
     Map<String, Integer> goods = new HashMap<>();
     goods.put("totalCount", 100);
     goods.put("seckillCount", 0);
@@ -94,7 +77,7 @@ public class RedisTemplateTest {
 
   @Test
   public void redisTestLua2() {
-    String key = "seckill:goodsStock:hi";
+    String key = "seckill:goodsStock:hello";
     Long value = redisTemplate.execute(this.script, Collections.singletonList(key), "9");
     logger.info("value={}", value);
   }
@@ -102,20 +85,16 @@ public class RedisTemplateTest {
   @Test
   public void redisTestLua1() {
     String key = "hello-lua";
-    final DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>();
-    redisScript.setScriptText("return 2*tonumber(ARGV[1])");
-    redisScript.setResultType(Long.class);
+    final RedisScript<Long> redisScript = RedisScript.of("return 2*tonumber(ARGV[1])", Long.class);
     Long value = redisTemplate.execute(redisScript, Collections.singletonList(key), "11");
     logger.info("value={}", value);
   }
 
   @Test
   public void redisTestLua0() {
-    final DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>();
-    redisScript.setScriptText("local times = redis.call('incr',KEYS[1]) if times == 1 then redis.call('expire',KEYS[1],ARGV[1]) end if times > 5 then return times end return -1");
-    redisScript.setResultType(Long.class);
+    final RedisScript<Long> redisScript = RedisScript.of("local times = redis.call('incr',KEYS[1]) if times == 1 then redis.call('expire',KEYS[1],ARGV[1]) end return times", Long.class);
     List<String> list = new ArrayList<>();
-    list.add("door3");
+    list.add("door");
     Long result = redisTemplate.execute(redisScript, list, "60");
     logger.info("result={}", result);
   }

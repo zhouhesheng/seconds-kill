@@ -29,17 +29,6 @@ import java.util.Map;
 @Controller
 @RequestMapping(value = "/secKill")
 public class SecKillController {
-  private static Integer maxTotal = 300;
-
-  private static Integer maxIdle = 100;
-
-  private static Integer maxWait = 10000;
-
-  private static Boolean testOnBorrow = true;
-
-  private static String redisIP = "127.0.0.1";
-  private static Integer redisPort = 6379;
-
   private static final String success = "SUCCESS";
   private static final String error = "ERROR";
   private static final String GOODS_CACHE = "seckill:goodsStock:";
@@ -47,7 +36,7 @@ public class SecKillController {
   @Autowired
   private RedisTemplate<String, Object> redisTemplate;
 
-  private final DefaultRedisScript<Object> script;
+  private final DefaultRedisScript<Long> script;
 
 
   private String getCacheKey(String id) {
@@ -60,6 +49,7 @@ public class SecKillController {
     final String lua = ScriptUtil.getScript("secKill.lua");
     this.script = new DefaultRedisScript<>();
     this.script.setScriptText(lua);
+    this.script.setResultType(Long.class);
   }
 
 
@@ -84,8 +74,7 @@ public class SecKillController {
   @ResponseBody
   public String secKill(HttpServletRequest request, String id, int number) {
     String key = getCacheKey(id);
-
-    Object seckillCount = redisTemplate.execute(script, Collections.singletonList(key), String.valueOf(number));
+    Long seckillCount = redisTemplate.execute(script, Collections.singletonList(key), String.valueOf(number));
     return success + ":" + seckillCount.toString();
   }
 }

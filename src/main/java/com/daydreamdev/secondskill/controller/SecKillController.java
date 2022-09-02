@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -72,9 +74,12 @@ public class SecKillController {
 
   @RequestMapping(value = "secKill", method = RequestMethod.POST)
   @ResponseBody
-  public String secKill(HttpServletRequest request, String id, int number) {
+  public ResponseEntity<String> secKill(HttpServletRequest request, String id, int number) {
     String key = getCacheKey(id);
     Long seckillCount = redisTemplate.execute(script, Collections.singletonList(key), String.valueOf(number));
-    return success + ":" + seckillCount.toString();
+    if (seckillCount == 0) {
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+    return ResponseEntity.ok(success + ":" + seckillCount);
   }
 }

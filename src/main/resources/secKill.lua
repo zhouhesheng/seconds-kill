@@ -1,4 +1,4 @@
-local resultFlag = "0" 
+local resultFlag = 0
 local n = tonumber(ARGV[1]) 
 local key = KEYS[1]
 local goodsInfo = redis.call("HMGET",key,"totalCount","seckillCount")
@@ -9,6 +9,6 @@ if not total then
 end
 if total >= alloc + n  then
     local ret = redis.call("HINCRBY",key,"seckillCount",n)
-    return tostring(ret)
+    return n
 end
 return resultFlag

@@ -33,7 +33,7 @@ public class RedisTemplateTest {
   private static Integer redisPort = 6379;
 
   private RedisTemplate<String, Object> redisTemplate;
-  private DefaultRedisScript<String> script;
+  private DefaultRedisScript<Long> script;
 
 
   @Bean
@@ -68,6 +68,7 @@ public class RedisTemplateTest {
     final String lua = ScriptUtil.getScript("secKill.lua");
     this.script = new DefaultRedisScript<>();
     this.script.setScriptText(lua);
+    this.script.setResultType(Long.class);
     logger.info("Before Function");
   }
 
@@ -94,7 +95,14 @@ public class RedisTemplateTest {
   }
 
   @Test
-  public void redisTestLua() {
+  public void redisTestLua2() {
+    String key = "seckill:goodsStock:hi";
+    Long value = redisTemplate.execute(this.script, Collections.singletonList(key), "9");
+    logger.info("value={}", value);
+  }
+
+  @Test
+  public void redisTestLua1() {
     String key = "hello-lua";
     final DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>();
     redisScript.setScriptText("return 2*tonumber(ARGV[1])");

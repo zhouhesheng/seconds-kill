@@ -70,7 +70,7 @@ public class SecKillController {
   public ResponseEntity<String> secKill(HttpServletRequest request, String id, int number) {
     String key = getCacheKey(id);
     Long seckillCount = redisTemplate.execute(script, Collections.singletonList(key), String.valueOf(number));
-    if (seckillCount == 0) {
+    if (seckillCount == null || seckillCount == 0) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
     return ResponseEntity.ok(success + ":" + seckillCount);
